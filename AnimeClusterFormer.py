@@ -23,6 +23,9 @@ from collections import Counter
 import multiprocessing
 import time
 from AnimeChecker import AnimeChecker
+from Tkinter import Tk
+from tkFileDialog import askopenfilename
+import tkFileDialog
 
 def plainString(word,repl):
     global stopwords
@@ -240,6 +243,14 @@ def printPossibleNames(animenames):
     while True:
         yield animenames[index:index+10]
         index += 10
+        
+def selectPath(string):
+    #print "Choose the destination path you want to make the Folder: {}".format(name)
+    root = Tk()
+    root.withdraw()
+    curdir = os.getcwd()
+    filepath = tkFileDialog.askdirectory(parent=root, initialdir=curdir, title=string)
+    return filepath
     
 def main():
     global stopwords
@@ -248,23 +259,26 @@ def main():
     global cosine_dict
     global animeChecker
     
-    fpath = "C:\\Users\\Rahul Nori\\Downloads\\Video\\"
-    fpath = "C:\\Users\\Rahul Nori\\Downloads\\"
+    #fpath = "C:\\Users\\Rahul Nori\\Downloads\\Video\\"
+    #fpath = "C:\\Users\\Rahul Nori\\Downloads\\"
     extensions = [".mp4",".mkv"]
     simhash_dict = {}
     cosine_dict = {}
     wordCounter = Counter()
-    animeChecker = AnimeChecker(fpath,extensions)
+    srcpath = selectPath("Select folder to process...")
+    destpath = selectPath("Select folderpath to save anime...")
+    srcpath = srcpath.replace("/","\\") + "\\"
+    destpath = destpath.replace("/","\\") + "\\"
+    print srcpath,destpath
+    animeChecker = AnimeChecker(srcpath,extensions)
     
     mystopwords = ["subbed","episode","horriblesubs","amv","online","watch","subdesu","mpt","tbs","aac","reinforce","oad","bdrip","flac","eng-sub"]
     stopwords = text.ENGLISH_STOP_WORDS.union(mystopwords)
     #fpath = "C:\\Users\\Rahul Nori\\Downloads\\Video\\"
     #fpath = "C:\\Users\\Rahul Nori\\Downloads\\"
     while True:
-        fpath = fpath.replace("/","\\")
         extensions = [".mp4",".mkv"]
-        
-        plfilenames,prfilenames = getFileNamesFromPath(fpath,extensions)
+        plfilenames,prfilenames = getFileNamesFromPath(srcpath,extensions)
         print "Cosine Sim calculation started."
         tfidf_matrix = tfidf(prfilenames)
         cosine_matrix = cosine_similarity(tfidf_matrix)
